@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Administrativo - PCB</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="dark-mode-fix.css">
+  <link rel="stylesheet" href="image-popup.css">
+  <script src="js/services-manager.js"></script>
+  <script src="js/novedades-db.js"></script>
+  <script src="js/anuncios-db.js"></script>
+  <script src="js/crypto-utils.js"></script>
+  <script src="js/jwt-simple.js"></script>
+  <script src="js/auth-jwt.js"></script>
+  <link rel="stylesheet" href="modern-enhancements.css?v=1">
+</head>
+
+<body>
+  <script>
+    // Proteger página de admin con JWT
+    (async function () {
+      const isAuth = await AuthJWT.isAuthenticated();
+      if (!isAuth) { window.location.href = 'login.html'; }
+    })();
+    // Aplicar tema guardado inmediatamente para evitar flash
+    (function() {
+      if (localStorage.getItem('adminTheme') === 'dark') {
+        document.body.classList.add('admin-dark');
+      }
+    })();
+  </script>
+
+  <div class="admin-layout">
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <img src="LOGO6.png" alt="Logo PCB">
+        <div class="sidebar-brand-text">
+          <h2>Panel Admin</h2>
+          <p>PCB System 2026</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Inicio</div>
+          <button class="nav-btn active" data-section="dashboard">
+            <span class="nav-icon">🏠</span> Dashboard General
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Publicaciones</div>
+          <button class="nav-btn" data-section="publicaciones_todas">
+            <span class="nav-icon">📂</span> Todas las publicaciones
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="publicaciones_crear">
+            <span class="nav-icon">➕</span> Crear publicación
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="novedades">
+            <span class="nav-icon">📣</span> Novedades
+          </button>
+          <button class="nav-btn" data-section="avisos">
+            <span class="nav-icon">📋</span> Avisos críticos
+          </button>
+          <button class="nav-btn" data-section="anuncios_comunidad">
+            <span class="nav-icon">📌</span> Anuncios Comunidad
+            <span id="badgePendientes" style="display:none;background:#e74c3c;color:#fff;border-radius:99px;padding:1px 7px;font-size:0.72rem;margin-left:6px;font-weight:700;">0</span>
+          </button>
+          <button class="nav-btn" data-section="promociones">
+            <span class="nav-icon">🏷️</span> Promociones
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Servicios Escolares</div>
+          <button class="nav-btn" data-section="comedor">
+            <span class="nav-icon">🍽️</span> Comedor
+          </button>
+          <button class="nav-btn" data-section="biblioteca">
+            <span class="nav-icon">📚</span> Biblioteca
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="reservas">
+            <span class="nav-icon">📅</span> Reservas
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="talleres">
+            <span class="nav-icon">🎓</span> Talleres para Padres
+          </button>
+          <button class="nav-btn" data-section="certificaciones">
+            <span class="nav-icon">🏆</span> Certificaciones
+          </button>
+          <button class="nav-btn" id="navOpenPcbLearning" title="Abrir el portal PCBLearning en una pestaña nueva">
+            <span class="nav-icon">🚀</span> Ver PCBLearning
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Comunicación</div>
+          <button class="nav-btn" data-section="bot">
+            <span class="nav-icon">🔔</span> Bot de Avisos
+          </button>
+          <button class="nav-btn" data-section="alertas">
+            <span class="nav-icon">🚨</span> Alertas
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="popup_principal">
+            <span class="nav-icon">💬</span> Popup Principal
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="notificaciones">
+            <span class="nav-icon">📲</span> Notificaciones
+            <span class="nav-soon">Próx.</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Administración</div>
+          <button class="nav-btn" data-section="usuarios">
+            <span class="nav-icon">👥</span> Usuarios
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="roles">
+            <span class="nav-icon">🛡️</span> Roles y permisos
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="configuracion">
+            <span class="nav-icon">⚙️</span> Configuración del portal
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="idioma_tema">
+            <span class="nav-icon">🌐</span> Idioma y tema visual
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="exportar">
+            <span class="nav-icon">📤</span> Exportar datos
+            <span class="nav-soon">Próx.</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Reportes</div>
+          <button class="nav-btn" data-section="reporte_actividad">
+            <span class="nav-icon">📊</span> Actividad del sistema
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="reporte_publicaciones">
+            <span class="nav-icon">🔥</span> Publicaciones más vistas
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="reporte_servicios">
+            <span class="nav-icon">🚀</span> Servicios más usados
+            <span class="nav-soon">Próx.</span>
+          </button>
+          <button class="nav-btn" data-section="historial">
+            <span class="nav-icon">📜</span> Historial de cambios
+            <span class="nav-soon">Próx.</span>
+          </button>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="theme-toggle-btn" id="adminThemeToggle">
+          <span id="themeLabel">☀️ Modo Claro</span>
+          <span style="opacity:0.5;">⇄</span>
+        </button>
+        <a href="index.html" class="btn-sidebar-action">← Volver al Sitio</a>
+        <button onclick="AuthJWT.logout()" class="btn-sidebar-action danger">🚪 Cerrar Sesión</button>
+      </div>
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <h1 id="sectionTitle">Dashboard General</h1>
+          <p id="sectionSubtitle" style="font-size:0.8rem;color:var(--muted);margin-top:2px;">Centro de Control Administrativo del PCBSystem</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary" id="btnExportData" title="Exportar datos a JSON">💾 Exportar</button>
+          <button class="btn btn-primary" id="btnEditMenu" style="display:none;">📝 Editar Menú</button>
+          <button class="btn btn-primary" id="btnAddImage" style="display:none;">➕ Añadir Imagen</button>
+        </div>
+      </header>
+
+      <!-- ══ Content Area ══ -->
+      <div class="admin-content">
+
+        <!-- Stats Row (visible en Dashboard y secciones existentes) -->
+        <div class="stats-row" id="statsRow">
+          <div class="stat-card">
+            <div class="stat-icon purple">🖼️</div>
+            <div class="stat-info"><h3 id="statPromos">0</h3><p>Promociones</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">📋</div>
+            <div class="stat-info"><h3 id="statAvisos">0</h3><p>Avisos</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">🎓</div>
+            <div class="stat-info"><h3 id="statTalleres">0</h3><p>Talleres</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">🏆</div>
+            <div class="stat-info"><h3 id="statCerts">0</h3><p>Certificaciones</p></div>
+          </div>
+        </div>
+
+        <!-- ══ DASHBOARD GENERAL ══ -->
+        <div id="dashboardSection" style="display:none;">
+          <!-- Resumen extendido -->
+          <div class="dash-grid">
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:rgba(102,126,234,0.12);color:#667eea;">📰</div>
+              <div class="dash-card-body">
+                <div class="dash-card-value" id="dashTotalPublicaciones">0</div>
+                <div class="dash-card-label">Publicaciones activas</div>
+              </div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:rgba(239,68,68,0.12);color:#ef4444;">🚨</div>
+              <div class="dash-card-body">
+                <div class="dash-card-value" id="dashAvisosCriticos">0</div>
+                <div class="dash-card-label">Avisos críticos</div>
+              </div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:rgba(245,158,11,0.12);color:#f59e0b;">🏷️</div>
+              <div class="dash-card-body">
+                <div class="dash-card-value" id="dashPromocionesActivas">0</div>
+                <div class="dash-card-label">Promociones activas</div>
+              </div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:rgba(16,185,129,0.12);color:#10b981;">🎓</div>
+              <div class="dash-card-body">
+                <div class="dash-card-value" id="dashTalleresPublicados">0</div>
+                <div class="dash-card-label">Talleres publicados</div>
+              </div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:rgba(59,130,246,0.12);color:#3b82f6;">🏆</div>
+              <div class="dash-card-body">
+                <div class="dash-card-value" id="dashCertsDisponibles">0</div>
+                <div class="dash-card-label">Certificaciones disponibles</div>
+              </div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:rgba(168,85,247,0.12);color:#a855f7;">📚</div>
+              <div class="dash-card-body">
+                <div class="dash-card-value" id="dashReservasBiblio">—</div>
+                <div class="dash-card-label">Reservas de biblioteca</div>
+              </div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:rgba(20,184,166,0.12);color:#14b8a6;">🍽️</div>
+              <div class="dash-card-body">
+                <div class="dash-card-value" id="dashMenuPublicado">—</div>
+                <div class="dash-card-label">Menú del comedor</div>
+              </div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:rgba(234,88,12,0.12);color:#ea580c;">📌</div>
+              <div class="dash-card-body">
+                <div class="dash-card-value" id="dashSolicitudesPendientes">0</div>
+                <div class="dash-card-label">Solicitudes pendientes</div>
+              </div>
+            </div>
+          </div>
+
+          <p class="dash-updated">🕒 Última actualización: <span id="dashLastUpdate">—</span></p>
+
+          <!-- Bloques inferiores -->
+          <div class="dash-bottom">
+            <div class="content-card dash-block">
+              <h3>⚡ Accesos rápidos</h3>
+              <div class="dash-quick">
+                <button class="dash-quick-btn" data-goto="novedades"><span>📣</span><span>Publicar novedad</span></button>
+                <button class="dash-quick-btn" data-goto="anuncios_comunidad"><span>📌</span><span>Aprobar anuncios</span></button>
+                <button class="dash-quick-btn" data-goto="comedor"><span>🍽️</span><span>Editar menú</span></button>
+                <button class="dash-quick-btn" data-goto="talleres"><span>🎓</span><span>Crear taller</span></button>
+                <button class="dash-quick-btn" data-goto="certificaciones"><span>🏆</span><span>Añadir certificación</span></button>
+                <button class="dash-quick-btn" data-goto="bot"><span>🔔</span><span>Configurar bot</span></button>
+                <a class="dash-quick-btn" href="excursiones/excursiones.html" style="text-decoration:none;"><span>📋</span><span>Formulario de Excursión</span></a>
+              </div>
+            </div>
+
+            <div class="content-card dash-block">
+              <h3>📋 Pendientes de aprobación</h3>
+              <div id="dashPendientesList" class="dash-list">
+                <div class="dash-empty">No hay pendientes en este momento.</div>
+              </div>
+            </div>
+
+            <div class="content-card dash-block">
+              <h3>🕘 Actividad reciente</h3>
+              <div id="dashActividadList" class="dash-list">
+                <div class="dash-empty">Aún no hay actividad registrada.</div>
+              </div>
+            </div>
+
+            <div class="content-card dash-block">
+              <h3>⚠️ Alertas importantes</h3>
+              <div id="dashAlertasList" class="dash-list">
+                <div class="dash-empty">Sin alertas activas.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ PLACEHOLDER "Próximamente" (para módulos en construcción) ══ -->
+        <div id="proximamenteSection" style="display:none;">
+          <div class="content-card proximamente-card">
+            <div class="proximamente-icon" id="proxIcon">🚧</div>
+            <h3 id="proxTitle">Próximamente</h3>
+            <p id="proxText">Este módulo se está construyendo y se activará en una próxima etapa del Centro de Control Administrativo.</p>
+            <span class="proximamente-badge">En desarrollo</span>
+          </div>
+        </div>
+
+        <!-- ══ TALLERES PARA PADRES ══ -->
+        <div id="talleresSection" style="display:none;">
+          <div class="content-card">
+            <h3>🎓 Agregar / Editar Taller para Padres</h3>
+            <form id="tallerForm">
+              <input type="hidden" id="tallerEditId">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Nombre del Taller *</label>
+                  <input type="text" id="tallerNombre" class="form-control" placeholder="Ej: Educación Financiera para Familias" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Instructor / Facilitador</label>
+                  <input type="text" id="tallerInstructor" class="form-control" placeholder="Ej: Prof. Ana García">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea id="tallerDescripcion" class="form-control" rows="3" placeholder="Describe el contenido y objetivos del taller..."></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Categoría</label>
+                  <select id="tallerCategoria" class="form-control">
+                    <option value="tecnologia">💻 Tecnología</option>
+                    <option value="finanzas">💰 Finanzas</option>
+                    <option value="salud">🏥 Salud y Bienestar</option>
+                    <option value="educacion">📚 Educación</option>
+                    <option value="empleo">💼 Empleo y Carrera</option>
+                    <option value="arte">🎨 Arte y Creatividad</option>
+                    <option value="otro">📌 Otro</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Modalidad</label>
+                  <select id="tallerModalidad" class="form-control">
+                    <option value="virtual">🖥️ Virtual</option>
+                    <option value="presencial">🏫 Presencial</option>
+                    <option value="hibrido">🔀 Híbrido</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Fecha</label>
+                  <input type="date" id="tallerFecha" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Duración</label>
+                  <input type="text" id="tallerDuracion" class="form-control" placeholder="Ej: 2 horas">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cupos Disponibles</label>
+                  <input type="number" id="tallerCupos" class="form-control" placeholder="Ej: 30" min="1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">URL de Imagen (opcional)</label>
+                  <input type="url" id="tallerImagen" class="form-control" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Enlace de Registro / Info</label>
+                  <input type="url" id="tallerEnlace" class="form-control" placeholder="https://...">
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">💾 Guardar Taller</button>
+                <button type="button" class="btn btn-secondary" id="btnCancelTaller">Cancelar</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="content-card">
+            <h3>📋 Talleres Publicados</h3>
+            <div class="items-list" id="talleresList">
+              <div class="empty-state"><div class="empty-icon">🎓</div><h3>No hay talleres</h3><p>Agrega el primer taller usando el formulario de arriba</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ CERTIFICACIONES ONLINE ══ -->
+        <div id="certificacionesSection" style="display:none;">
+          <div class="content-card">
+            <h3>🏆 Agregar / Editar Certificación Online</h3>
+            <form id="certForm">
+              <input type="hidden" id="certEditId">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Nombre de la Certificación *</label>
+                  <input type="text" id="certNombre" class="form-control" placeholder="Ej: Google IT Support Professional" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Proveedor / Plataforma</label>
+                  <input type="text" id="certProveedor" class="form-control" placeholder="Ej: Coursera, edX, Google...">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea id="certDescripcion" class="form-control" rows="3" placeholder="Describe la certificación y sus beneficios..."></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Duración Estimada</label>
+                  <input type="text" id="certDuracion" class="form-control" placeholder="Ej: 6 meses, 40 horas">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nivel</label>
+                  <select id="certNivel" class="form-control">
+                    <option value="principiante">🟢 Principiante</option>
+                    <option value="intermedio">🟡 Intermedio</option>
+                    <option value="avanzado">🔴 Avanzado</option>
+                    <option value="todos">🔵 Todos los niveles</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Formato</label>
+                  <select id="certFormato" class="form-control">
+                    <option value="enlinea">🌐 En línea</option>
+                    <option value="grabado">🎥 Grabado</option>
+                    <option value="hibrido">🔀 Híbrido</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Precio</label>
+                  <input type="text" id="certPrecio" class="form-control" placeholder="Ej: Gratis, $49, Beca disponible">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Enlace de Acceso *</label>
+                  <input type="url" id="certEnlace" class="form-control" placeholder="https://..." required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">URL de Imagen (opcional)</label>
+                  <input type="url" id="certImagen" class="form-control" placeholder="https://...">
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">💾 Guardar Certificación</button>
+                <button type="button" class="btn btn-secondary" id="btnCancelCert">Cancelar</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="content-card">
+            <h3>📋 Certificaciones Publicadas</h3>
+            <div class="items-list" id="certsList">
+              <div class="empty-state"><div class="empty-icon">🏆</div><h3>No hay certificaciones</h3><p>Agrega la primera certificación usando el formulario de arriba</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ MENU EDITOR (solo comedor) ══ -->
+        <div class="menu-editor-section" id="menuEditorSection" style="display: none;">
+          <div class="upload-card">
+            <h3>📝 Editar Menú del Día</h3>
+            <form id="menuForm">
+              <div class="menu-section">
+                <h4>🌅 Desayuno</h4>
+                <div class="form-group">
+                  <label>Items del desayuno (uno por línea):</label>
+                  <textarea id="desayunoItems" rows="5"
+                    placeholder="Ej:&#10;Revoltillo&#10;Peras Frescas&#10;Melocotones&#10;Leche"></textarea>
+                </div>
+              </div>
+
+              <div class="menu-section">
+                <h4>🍽️ Almuerzo</h4>
+                <div class="form-group">
+                  <label>Items del almuerzo (uno por línea):</label>
+                  <textarea id="almuerzoItems" rows="6"
+                    placeholder="Ej:&#10;Arroz&#10;Habichuelas guisadas&#10;Carne de Cerdo&#10;Zanahoria&#10;Manzana&#10;Coctel de fruta"></textarea>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">💾 Guardar Menú</button>
+                <button type="button" class="btn-secondary" id="btnCancelMenu">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="upload-section" id="uploadSection" style="display: none;">
+          <div class="upload-card">
+            <h3>Subir Nueva Imagen</h3>
+
+            <!-- Tabs para elegir método -->
+            <div class="upload-tabs">
+              <button type="button" class="tab-btn active" data-tab="file">📁 Subir Archivo</button>
+              <button type="button" class="tab-btn" data-tab="url">🔗 URL Externa</button>
+            </div>
+
+            <form id="uploadForm">
+              <!-- Tab: Subir Archivo -->
+              <div class="tab-content active" id="tabFile">
+                <div class="form-group">
+                  <label for="imageFile">Seleccionar Imagen:</label>
+                  <input type="file" id="imageFile" accept="image/*">
+                  <div class="file-preview" id="filePreview"></div>
+                  <p class="help-text">⚠️ Nota: Para usar en GitHub, debes copiar manualmente la imagen a la carpeta
+                    correspondiente o usar URL externa.</p>
+                </div>
+              </div>
+
+              <!-- Tab: URL Externa -->
+              <div class="tab-content" id="tabUrl" style="display: none;">
+                <div class="form-group">
+                  <label for="imageUrl">URL de la Imagen:</label>
+                  <input type="url" id="imageUrl" placeholder="https://ejemplo.com/imagen.jpg">
+                  <p class="help-text">
+                    💡 Puedes usar servicios como:
+                    <br>• <a href="https://imgur.com" target="_blank">Imgur</a> (recomendado)
+                    <br>• <a href="https://postimages.org" target="_blank">PostImages</a>
+                    <br>• Google Drive (asegúrate de que sea público)
+                  </p>
+                  <div class="url-preview" id="urlPreview"></div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="imageTitle">Título (opcional):</label>
+                <input type="text" id="imageTitle" placeholder="Ej: Inscripción Abierta 2026">
+              </div>
+              <div class="form-group">
+                <label for="imageDescription">Descripción (opcional):</label>
+                <textarea id="imageDescription" rows="3"
+                  placeholder="Ej: ¡Únete a nuestra familia educativa!"></textarea>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">Guardar Imagen</button>
+                <button type="button" class="btn-secondary" id="btnCancelUpload">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Bot Configuration (only for bot section) -->
+        <div class="bot-config-section" id="botConfigSection" style="display: none;">
+          <div class="upload-card">
+            <h3>🔔 Configuración del Bot de Avisos</h3>
+            <p style="margin-bottom: 1.5rem; color: #7f8c8d;">
+              Selecciona los avisos y promociones que quieres mostrar en el bot flotante del sitio web.
+            </p>
+            <div id="botItemsList">
+              <!-- Items will be loaded here -->
+            </div>
+            <div class="form-actions" style="margin-top: 1.5rem;">
+              <button type="button" class="btn-primary" id="btnSaveBotConfig">💾 Guardar Configuración</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gestión de Novedades (solo visible en sección Novedades) -->
+        <div id="novedadesSection" style="display:none;">
+          <div class="content-card">
+            <h3>📣 Gestión de Novedades (Popup)</h3>
+            <p style="color:var(--muted); margin-bottom:1.25rem; font-size:0.88rem;">La noticia más reciente aparecerá automáticamente en el popup de la página principal.</p>
+            <form id="newsForm" style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.25rem; align-items:flex-end;">
+              <div style="flex:1; min-width:180px;">
+                <label class="form-label">Título</label>
+                <input type="text" id="newsTitle" class="form-control" placeholder="Ej: ¡Matrícula Abierta!" required>
+              </div>
+              <div style="flex:2; min-width:260px;">
+                <label class="form-label">Mensaje</label>
+                <input type="text" id="newsMessage" class="form-control" placeholder="Detalles de la noticia..." required>
+              </div>
+              <div style="flex:1; min-width:180px;">
+                <label class="form-label">URL Imagen (Opcional)</label>
+                <input type="text" id="newsImage" class="form-control" placeholder="https://...">
+              </div>
+              <div style="flex:1 1 100%; display:flex; align-items:center; gap:0.5rem; padding:0.6rem 0.75rem; background:#fff8e1; border:1px solid #ffe082; border-radius:6px;">
+                <input type="checkbox" id="newsIsCritical" style="width:18px; height:18px; cursor:pointer;">
+                <label for="newsIsCritical" style="margin:0; cursor:pointer; font-size:0.88rem; color:#7c4a00;">
+                  🚨 <strong>Mensaje crítico</strong> — siempre visible en el popup (de lo contrario, solo se muestra en la primera visita).
+                </label>
+              </div>
+              <button type="submit" class="btn btn-primary">📤 Publicar</button>
+            </form>
+            <ul id="newsList" style="list-style:none; padding:0;"></ul>
+          </div>
+        </div>
+
+        <!-- ══ Modal Editar Anuncio ══ -->
+        <div id="modalEditarAnuncio" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;align-items:center;justify-content:center;padding:1rem;">
+          <div style="background:var(--card-bg,#fff);border-radius:14px;width:100%;max-width:520px;box-shadow:0 8px 40px rgba(0,0,0,0.22);overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;">
+              <span style="color:#fff;font-weight:700;font-size:1.05rem;">✏️ Editar Anuncio</span>
+              <button onclick="adminApp.cerrarModalEdicion()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1.1rem;line-height:1;">✕</button>
+            </div>
+            <div style="padding:1.25rem;display:flex;flex-direction:column;gap:0.85rem;">
+              <input type="hidden" id="editAnuncioId">
+              <div>
+                <label style="font-size:0.82rem;font-weight:600;color:var(--muted);">Título</label>
+                <input id="editTitulo" type="text" class="form-control" style="margin-top:0.25rem;width:100%;" placeholder="Título del anuncio">
+              </div>
+              <div>
+                <label style="font-size:0.82rem;font-weight:600;color:var(--muted);">Mensaje</label>
+                <textarea id="editMensaje" class="form-control" rows="3" style="margin-top:0.25rem;width:100%;resize:vertical;" placeholder="Descripción del anuncio"></textarea>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:var(--muted);">Categoría</label>
+                  <select id="editCategoria" class="form-control" style="margin-top:0.25rem;width:100%;">
+                    <option value="aviso">📢 Aviso</option>
+                    <option value="avisos">📢 Avisos</option>
+                    <option value="objetos_perdidos">🔍 Objetos Perdidos</option>
+                    <option value="actividades">🎉 Actividades</option>
+                    <option value="recaudaciones">💰 Recaudaciones</option>
+                    <option value="promociones">🏷️ Promociones</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:var(--muted);">Caduca</label>
+                  <input id="editCaducidad" type="date" class="form-control" style="margin-top:0.25rem;width:100%;">
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:var(--muted);">Autor</label>
+                  <input id="editAutor" type="text" class="form-control" style="margin-top:0.25rem;width:100%;" placeholder="Nombre del autor">
+                </div>
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:var(--muted);">Contacto</label>
+                  <input id="editContacto" type="text" class="form-control" style="margin-top:0.25rem;width:100%;" placeholder="Tel / email">
+                </div>
+              </div>
+              <div id="editImagenPreviewWrap" style="display:none;margin-top:0.25rem;">
+                <label style="font-size:0.82rem;font-weight:600;color:var(--muted);">Imagen actual</label>
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.25rem;">
+                  <img id="editImagenPreview" src="" style="max-height:70px;border-radius:8px;object-fit:cover;" onerror="this.parentElement.parentElement.style.display='none'">
+                  <button onclick="adminApp.quitarImagenEdicion()" style="background:#e74c3c;color:#fff;border:none;padding:4px 10px;border-radius:7px;cursor:pointer;font-size:0.8rem;">🗑️ Quitar</button>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:0.6rem;margin-top:0.5rem;">
+                <button onclick="adminApp.cerrarModalEdicion()" class="btn btn-secondary" style="padding:0.5rem 1.1rem;">Cancelar</button>
+                <button onclick="adminApp.guardarEdicionAnuncio()" class="btn btn-primary" style="padding:0.5rem 1.1rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;">💾 Guardar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ Anuncios Comunidad (solo visible en sección anuncios_comunidad) ══ -->
+        <div id="anunciosComunidadSection" style="display:none;">
+          <div class="content-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem;">
+              <div>
+                <h3 style="margin:0;">📌 Anuncios de la Comunidad</h3>
+                <p style="margin:0.25rem 0 0;color:var(--muted);font-size:0.82rem;">Aprueba o rechaza los anuncios enviados por visitantes. Solo los aprobados y no caducados aparecen en el popup.</p>
+              </div>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <select id="filtroAnuncio" class="form-control" style="min-width:160px;padding:0.45rem 0.75rem;">
+                  <option value="">Todas las categorías</option>
+                  <option value="pendiente">⏳ Pendientes</option>
+                  <option value="objetos_perdidos">🔍 Objetos Perdidos</option>
+                  <option value="actividades">🎉 Actividades</option>
+                  <option value="recaudaciones">💰 Recaudaciones</option>
+                  <option value="avisos">📢 Avisos</option>
+                  <option value="promociones">🏷️ Promociones</option>
+                </select>
+                <button class="btn btn-secondary" onclick="adminApp.reloadAnuncios()">🔄 Actualizar</button>
+              </div>
+            </div>
+            <div id="anunciosList"></div>
+          </div>
+        </div>
+
+        <!-- Recomendaciones del Comedor (solo visible en sección Comedor) -->
+        <div id="recomendacionesAdminSection" style="display:none; margin-bottom:1.5rem;">
+          <div class="content-card" style="border-left:4px solid var(--accent);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.1rem;">
+              <div>
+                <h3 style="margin:0;">💬 Recomendaciones de Estudiantes</h3>
+                <p style="margin:0.25rem 0 0; color:var(--muted); font-size:0.82rem;">Gestiona las recomendaciones enviadas desde el comedor</p>
+              </div>
+              <span id="recCount" style="background:var(--accent);color:white;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.82rem;font-weight:700;">0</span>
+            </div>
+            <div id="recomendacionesAdminList"></div>
+          </div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="gallery-grid" id="galleryGrid">
+          <!-- Images will be loaded here dynamically -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+          <div class="empty-icon">📸</div>
+          <h3>No hay imágenes</h3>
+          <p>Añade tu primera imagen usando el botón de arriba</p>
+        </div>
+      </div><!-- /admin-content -->
+    </main>
+  </div><!-- /admin-layout -->
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <h3>⚠️ Confirmar Eliminación</h3>
+      <p>¿Estás seguro de que deseas eliminar esta imagen?</p>
+      <p class="modal-warning">Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button class="btn-danger" id="btnConfirmDelete">Eliminar</button>
+        <button class="btn-secondary" id="btnCancelDelete">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit News Modal -->
+  <div class="modal" id="editNewsModal">
+    <div class="modal-content">
+      <h3>✏️ Editar Noticia</h3>
+      <div class="form-group"><label class="form-label">Título</label><input type="text" id="editNewsTitle" class="form-control" placeholder="Título de la noticia..."></div>
+      <div class="form-group"><label class="form-label">Mensaje</label><textarea id="editNewsMessage" class="form-control" rows="3" placeholder="Detalles de la noticia..." style="resize:vertical;"></textarea></div>
+      <div class="form-group"><label class="form-label">URL de Imagen (opcional)</label><input type="text" id="editNewsImageUrl" class="form-control" placeholder="https://..."></div>
+      <div class="form-group" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 0.75rem; background:#fff8e1; border:1px solid #ffe082; border-radius:6px;">
+        <input type="checkbox" id="editNewsIsCritical" style="width:18px; height:18px; cursor:pointer;">
+        <label for="editNewsIsCritical" style="margin:0; cursor:pointer; font-size:0.88rem; color:#7c4a00;">
+          🚨 <strong>Mensaje crítico</strong> — siempre visible en el popup.
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btnSaveNewsEdit">💾 Guardar Cambios</button>
+        <button class="btn btn-secondary" id="btnCancelNewsEdit">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Gallery Item Modal -->
+  <div class="modal" id="editGalleryItemModal">
+    <div class="modal-content">
+      <h3>✏️ Editar Imagen</h3>
+      <div class="form-group"><label class="form-label">Título</label><input type="text" id="editGalleryTitle" class="form-control" placeholder="Título..."></div>
+      <div class="form-group"><label class="form-label">Descripción</label><textarea id="editGalleryDesc" class="form-control" rows="3" placeholder="Descripción..." style="resize:vertical;"></textarea></div>
+      <div class="form-group"><label class="form-label">Imagen actual</label><div id="editGalleryImgPreview" style="margin-top:0.5rem;text-align:center;"></div></div>
+      <div class="form-group">
+        <label class="form-label">Reemplazar imagen (opcional)</label>
+        <input type="file" id="editGalleryImgFile" accept="image/jpeg,image/png,image/webp" style="display:block;margin-top:0.4rem;font-size:0.88rem;color:var(--muted);">
+        <small style="color:var(--muted);font-size:0.78rem;">Deja vacío para conservar la imagen actual.</small>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btnSaveGalleryEdit">💾 Guardar Cambios</button>
+        <button class="btn btn-secondary" id="btnCancelGalleryEdit">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Bot Item Modal -->
+  <div class="modal" id="editBotItemModal">
+    <div class="modal-content">
+      <h3>✏️ Editar Aviso / Promoción</h3>
+      <div class="form-group"><label class="form-label">Título</label><input type="text" id="editBotTitle" class="form-control" placeholder="Título del aviso..."></div>
+      <div class="form-group"><label class="form-label">Descripción</label><textarea id="editBotDesc" class="form-control" rows="3" placeholder="Descripción del aviso..." style="resize:vertical;"></textarea></div>
+      <div class="form-group"><label class="form-label">Imagen actual</label><div id="editBotImgPreview" style="margin-top:0.5rem;text-align:center;"></div></div>
+      <div class="form-group">
+        <label class="form-label">Reemplazar imagen (opcional)</label>
+        <input type="file" id="editBotImgFile" accept="image/jpeg,image/png,image/webp" style="display:block;margin-top:0.4rem;font-size:0.88rem;color:var(--muted);">
+        <small style="color:var(--muted);font-size:0.78rem;">Deja vacío para conservar la imagen actual.</small>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btnSaveBotItemEdit">💾 Guardar Cambios</button>
+        <button class="btn btn-secondary" id="btnCancelBotItemEdit">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Recommendation Modal -->
+  <div class="modal" id="editRecModal">
+    <div class="modal-content">
+      <h3>✏️ Editar Recomendación</h3>
+      <div class="form-group"><label class="form-label">Nombre del Estudiante</label><input type="text" id="editRecNombre" class="form-control" placeholder="Nombre..."></div>
+      <div class="form-group"><label class="form-label">Recomendación</label><textarea id="editRecTexto" class="form-control" rows="4" placeholder="Texto de la recomendación..." style="resize:vertical;"></textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btnSaveRecEdit">💾 Guardar Cambios</button>
+        <button class="btn btn-secondary" id="btnCancelRecEdit">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="image-popup.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    // Initialize image popup for gallery items after they are rendered
+    // This will be called after renderGallery() in admin.js
+    window.addEventListener('DOMContentLoaded', function () {
+      // Create a MutationObserver to watch for changes in the gallery
+      const galleryGrid = document.getElementById('galleryGrid');
+
+      if (galleryGrid) {
+        const observer = new MutationObserver(function (mutations) {
+          // Re-initialize popup for gallery items whenever the gallery changes
+          setTimeout(() => {
+            if (window.imagePopup && window.imagePopup.init) {
+              window.imagePopup.init('.gallery-item', '.gallery-item-image');
+            }
+          }, 100);
+        });
+
+        observer.observe(galleryGrid, {
+          childList: true,
+          subtree: true
+        });
+
+        // Initial initialization
+        setTimeout(() => {
+          if (window.imagePopup && window.imagePopup.init) {
+            window.imagePopup.init('.gallery-item', '.gallery-item-image');
+          }
+        }, 500);
+      }
+    });
+  </script>
+  <script src="modern-enhancements.js?v=1" defer></script>
+</body>
+
+</html>
